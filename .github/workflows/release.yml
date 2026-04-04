@@ -1,0 +1,47 @@
+name: Release & Documentation
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - 'README.md'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get Joke
+        id: joke
+        run: |
+          JOKE=$(curl -s https://api.chucknorris.io/jokes/random | jq -r '.value')
+          echo "joke_content=$JOKE" >> $GITHUB_OUTPUT
+
+      - name: Update README
+        run: |
+          VERSION="v1.0.${{ github.run_number }}"
+          TITLE=$(git log -1 --pretty=%s)
+          echo -e "\n## Latest Release Info\n- **Version:** $VERSION\n- **PR Title:** $TITLE\n- **Joke:** ${{ steps.joke.outputs.joke_content }}" >> README.md
+          
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "docs: update README [skip ci]"
+          git push
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Release v1.0.${{ github.run_number }}
+          body: |
+            New release based on: $(git log -1 --pretty=%s)
+            Joke: ${{ steps.joke.outputs.joke_content }}
+          token: ${{ secrets.GITHUB_TOKEN }}
