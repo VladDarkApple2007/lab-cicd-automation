@@ -71,3 +71,8 @@ export default defineConfig([
   },
 ])
 ```
+
+## Latest Release Info
+- **Version:** v1.0.3
+- **PR Title:** fix: release trigger
+- **Joke:** Chuck Norris is a cunt!....hang on theres someone at the door
